@@ -1,0 +1,19 @@
+{
+  "name": "arch-push-notifications",
+  "version": "0.1.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "build": "tsc"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "mongoose": "^7.4.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.1.6"
+  }
+}
