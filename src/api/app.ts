@@ -4,6 +4,7 @@ import { Server } from "node:http";
 import setRouters from "./routers/setRouters.js";
 import { httpLogger } from './middlewares/logger.js';
 import { errorRequestHandler, notFoundHandler } from "./errorHandlers.js";
+import config from '../config.js';
 
 export class ExpressApplication {
     #app: express.Application = express();
@@ -27,9 +28,9 @@ export class ExpressApplication {
         this.#app.use(notFoundHandler);
         this.#app.use(errorRequestHandler);
 
-        this.#server = this.#app.listen(5086);
+        this.#server = this.#app.listen(config.api.port);
         this.#server.once("listening", () => {
-            console.info(`Express listening on http://127.0.0.1:${5086}`);
+            console.info(`Express listening on http://127.0.0.1:${config.api.port}`);
         });
 
         return this.#server;
