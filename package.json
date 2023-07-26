@@ -2,9 +2,9 @@
   "name": "arch-push-notifications",
   "version": "0.1.0",
   "description": "",
-  "main": "index.js",
   "type": "module",
   "scripts": {
+    "start": "node ./dist/index.js",
     "build": "tsc"
   },
   "keywords": [],

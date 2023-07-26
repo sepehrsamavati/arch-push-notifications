@@ -11,8 +11,6 @@ export const pushNotificationHandler: RequestHandler = async (req, res, next) =>
 
     if (!subscription) return res.status(404).send("User not found");
 
-    const body = pushNotificationDTO.bodyText;
-
     webpush.setVapidDetails(
         config.vapid.subject,
         config.vapid.publicKey,
@@ -25,7 +23,11 @@ export const pushNotificationHandler: RequestHandler = async (req, res, next) =>
             auth: subscription.auth,
             p256dh: subscription.p256dh
         }
-    }, body)
+    }, JSON.stringify({
+        title: pushNotificationDTO.title,
+        body: pushNotificationDTO.bodyText,
+        url: pushNotificationDTO.url
+    }))
         .then(result => {
             res.json(result);
         })
