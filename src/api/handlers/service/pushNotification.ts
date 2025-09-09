@@ -1,43 +1,58 @@
 import webpush from "web-push";
-import config from "../../../config.js";
 import { RequestHandler } from "express";
 import PushNotificationDTO from "../../dto/PushNotificationDTO.js";
-import userRepository from "../../../repository/mongo/fakeRepo.js";
+import { instance as scopeRepository } from "../../../repository/sqlite/ScopeRepository.js";
+import { instance as subscriptionRepository } from "../../../repository/sqlite/SubscriptionRepository.js";
 
-export const pushNotificationHandler: RequestHandler = async (req, res, next) => {
+export const pushNotificationHandler: RequestHandler = async (_req, res, _next) => {
     const pushNotificationDTO: PushNotificationDTO = res.locals.dto;
 
-    const subscription = userRepository.find(pushNotificationDTO.userId);
+    const scope = await scopeRepository.get({ accessToken: pushNotificationDTO.key });
 
-    if (!subscription) return res.status(404).send("User not found");
+    if (!scope)
+        return res.status(401).json({ message: "Invalid key" });
 
-    webpush.setVapidDetails(
-        config.vapid.subject,
-        config.vapid.publicKey,
-        config.vapid.privateKey
+    const subscriptions = await subscriptionRepository.getMany({
+        scopeId: scope.id,
+        scopeUserId: pushNotificationDTO.userId,
+    });
+
+    if (!subscriptions) return res.status(404).send("No subscriptions found");
+
+    const results: unknown[] = [];
+
+    await Promise.all(
+        subscriptions
+            .map(subscription => new Promise(resolve => {
+                webpush.sendNotification({
+                    endpoint: subscription.endpoint,
+                    keys: {
+                        auth: subscription.auth,
+                        p256dh: subscription.p256dh
+                    },
+                }, JSON.stringify({
+                    title: pushNotificationDTO.title,
+                    body: pushNotificationDTO.bodyText,
+                    url: pushNotificationDTO.url
+                }), {
+                    vapidDetails: {
+                        subject: scope.subject,
+                        publicKey: scope.publicKey,
+                        privateKey: scope.privateKey,
+                    }
+                })
+                    .then(result => results.push(result))
+                    .catch(error => {
+                        console.log("Web Push Error, ", error);
+                        let errorResult = typeof error === "object" && error && 'body' in error ? error.body : { message: "Error" };
+                        try {
+                            errorResult = JSON.parse(error.body);
+                        } catch { }
+                        results.push(errorResult);
+                    })
+                    .finally(() => resolve(null));
+            }))
     );
 
-    webpush.sendNotification({
-        endpoint: subscription.endpoint,
-        keys: {
-            auth: subscription.auth,
-            p256dh: subscription.p256dh
-        }
-    }, JSON.stringify({
-        title: pushNotificationDTO.title,
-        body: pushNotificationDTO.bodyText,
-        url: pushNotificationDTO.url
-    }))
-        .then(result => {
-            res.json(result);
-        })
-        .catch(err => {
-            console.log("Web Push Error, ", err);
-            let errorResult = err.body || { message: "Error" };
-            try {
-                errorResult = JSON.parse(err.body);
-            } catch {}
-            res.status(err.statusCode || 500).json(errorResult);
-        });
-
+    res.json(results);
 };
