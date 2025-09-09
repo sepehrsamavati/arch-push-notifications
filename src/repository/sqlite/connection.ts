@@ -1,5 +1,5 @@
 import { Sequelize } from "sequelize";
-import Models from "./configuration/Models";
+import Models from "./configuration/Models.js";
 
 export default class SqliteConnection {
     public readonly instance = new Sequelize("sqlite:./db.sqlite3", { logging: false });

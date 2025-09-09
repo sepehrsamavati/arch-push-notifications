@@ -1,6 +1,6 @@
 import { WhereOptions } from "sequelize";
-import { connection } from "./connection";
-import { ISubscriptionDbModel, ISubscriptionWithId } from "./configuration/entities";
+import { connection } from "./connection.js";
+import { ISubscriptionDbModel, ISubscriptionWithId } from "./configuration/entities.js";
 
 class SubscriptionRepository {
     private database;

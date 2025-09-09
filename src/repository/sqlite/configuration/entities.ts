@@ -1,5 +1,5 @@
-import type { IScope } from "../../../types/entities/scope";
-import type { ISubscription } from "../../../types/entities/subscription";
+import type { IScope } from "../../../types/entities/scope.js";
+import type { ISubscription } from "../../../types/entities/subscription.js";
 
 type WithIncrementalId<T> = T & {
     id: number;

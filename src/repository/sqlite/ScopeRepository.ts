@@ -1,6 +1,6 @@
 import { WhereOptions } from "sequelize";
-import { connection } from "./connection";
-import { IScopeDbModel } from "./configuration/entities";
+import { connection } from "./connection.js";
+import { IScopeDbModel } from "./configuration/entities.js";
 
 class ScopeRepository {
     private database;

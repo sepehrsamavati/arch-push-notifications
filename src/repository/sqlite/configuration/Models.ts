@@ -1,7 +1,7 @@
-import { ContentEncoding } from "../../../types/enums";
+import { ContentEncoding } from "../../../types/enums.js";
 import { DataTypes, type Model, type Sequelize } from "sequelize";
-import type { ISubscription } from "../../../types/entities/subscription";
-import type { CreateModel, IScopeDbModel, ISubscriptionDbModel } from "./entities";
+import type { ISubscription } from "../../../types/entities/subscription.js";
+import type { CreateModel, IScopeDbModel, ISubscriptionDbModel } from "./entities.js";
 
 export default class Models {
     public readonly subscription;
@@ -73,7 +73,7 @@ export default class Models {
             indexes: [
                 {
                     unique: false,
-                    fields: ["scope", "scopeUserId"]
+                    fields: ["scopeId", "scopeUserId"] satisfies Array<keyof ISubscriptionDbModel>
                 }
             ]
         });
