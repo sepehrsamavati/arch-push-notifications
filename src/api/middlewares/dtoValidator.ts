@@ -4,7 +4,7 @@ import { plainToClass } from "class-transformer";
 
 export const validator = <T extends object>(Model: new () => T) => {
 
-    const createInstance = (rawData: unknown): T => plainToClass(Model, rawData, { enableImplicitConversion: true }) ?? new Model();
+    const createInstance = (rawData: unknown): T => plainToClass(Model, rawData, { enableImplicitConversion: true, excludeExtraneousValues: true, }) ?? new Model();
 
     const middleware: RequestHandler = (req, res, next) => {
         const instance = createInstance(['GET', 'DELETE'].includes(req.method) ? req.query : req.body);
