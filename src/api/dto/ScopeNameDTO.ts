@@ -1,13 +1,12 @@
 import { Expose, Type } from "class-transformer";
-import { IsDefined, IsNumber, Max, Min } from "class-validator";
+import { IsDefined, IsString, MaxLength } from "class-validator";
 
 export default class ScopeNameDTO {
     @Expose()
-    @Type(() => Number)
+    @Type(() => String)
     @IsDefined()
-    @IsNumber()
-    @Min(0)
-    @Max(10e6)
+    @IsString()
+    @MaxLength(100)
     /** Scope unique name */
     scope!: string;
 }
