@@ -66,6 +66,11 @@ export default class Models {
                     len: [30, 150],
                 },
             },
+            expirationTime: {
+                type: DataTypes.DOUBLE,
+                allowNull: true,
+                defaultValue: null,
+            },
         }, {
             tableName: 'subscriptions',
             timestamps: true,

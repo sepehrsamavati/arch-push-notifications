@@ -1,4 +1,4 @@
-import { WhereOptions } from "sequelize";
+import { WhereOptions, Op } from "sequelize";
 import { connection } from "./connection.js";
 import { ISubscriptionDbModel, ISubscriptionWithId } from "./configuration/entities.js";
 
@@ -54,6 +54,7 @@ class SubscriptionRepository {
                 p256dh: item.p256dh,
                 scope: (item as unknown as ISubscriptionWithId).scope,
                 scopeUserId: item.scopeUserId,
+                expirationTime: item.expirationTime,
             } satisfies ISubscriptionWithId)) : null;
         } catch (err) {
             console.error(err);
@@ -68,6 +69,26 @@ class SubscriptionRepository {
                 where: {
                     id
                 },
+            });
+
+            return true;
+        } catch (err) {
+            console.log(err)
+            return false;
+        }
+    }
+
+    async deleteExpiredItems() {
+        try {
+            await this.database.models.subscription.update({
+                isDeleted: true,
+            }, {
+                where: {
+                    isDeleted: false,
+                    expirationTime: {
+                        [Op.gte]: Date.now(),
+                    }
+                }
             });
 
             return true;

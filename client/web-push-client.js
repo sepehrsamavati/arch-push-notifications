@@ -46,7 +46,8 @@ async function initWebPushClient() {
                 endpoint: subscription.endpoint,
                 encoding: "aes128gcm",
                 auth: subscription.getKey('auth'),
-                p256dh: subscription.getKey('p256dh')
+                p256dh: subscription.getKey('p256dh'),
+                expirationTime: subscription.expirationTime,
             })
         })
             .then(res => res.text())

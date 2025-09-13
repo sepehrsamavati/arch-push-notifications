@@ -10,4 +10,5 @@ export type ISubscription = {
     encoding: ContentEncoding;
     auth: string;
     p256dh: string;
+    expirationTime?: number | null;
 };

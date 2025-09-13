@@ -1,7 +1,7 @@
 import ScopeNameDTO from "./ScopeNameDTO.js";
 import { Expose, Type } from "class-transformer";
 import { ContentEncoding } from "../../types/enums.js";
-import { IsDefined, IsEnum, IsString, MaxLength, MinLength } from "class-validator";
+import { IsDefined, IsEnum, IsNumber, IsOptional, IsString, Max, MaxLength, Min, MinLength } from "class-validator";
 
 export default class RegisterDTO extends ScopeNameDTO {
     @Expose()
@@ -41,4 +41,12 @@ export default class RegisterDTO extends ScopeNameDTO {
     @IsString()
     @MinLength(20)
     p256dh!: string;
+
+    @Expose()
+    @Type(() => Number)
+    @IsOptional()
+    @IsNumber()
+    @Min(1e3)
+    @Max(new Date("3000-01-01").getTime())
+    expirationTime?: number;
 }
