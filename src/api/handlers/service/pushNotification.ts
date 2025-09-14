@@ -17,7 +17,7 @@ export const pushNotificationHandler: RequestHandler = async (_req, res, _next) 
         scopeUserId: pushNotificationDTO.userId,
     });
 
-    if (!subscriptions) return res.status(404).send("No subscriptions found");
+    if (!subscriptions) return res.status(404).json({ message: "No subscriptions found" });
 
     const results: unknown[] = [];
 
