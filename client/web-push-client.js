@@ -7,6 +7,20 @@ function arrayBufferToBase64(buffer) {
     return btoa(binary);
 }
 
+async function subscriptionExists(scope, endpoint) {
+    try {
+        const query = new URLSearchParams();
+        query.append("scope", scope);
+        query.append("url", endpoint);
+        const res = await fetch(serverUrl + "/api/service/subscriptionExistsHandler?" + query);
+        if (res.status === 200) {
+            const data = await res.json();
+            return Boolean(data.ok);
+        }
+    } catch { }
+    return false;
+}
+
 async function initWebPushClient() {
     const serverUrl = "http://HOST:PORT";
     const accessToken = "123";
@@ -30,9 +44,11 @@ async function initWebPushClient() {
         let subscription = await registration.pushManager.getSubscription();
 
         if (subscription) {
-            if (arrayBufferToBase64(subscription.getKey('p256dh')) !== publicKey)
+            const existsOnServer = await subscriptionExists(scope, subscription.endpoint);
+            if (existsOnServer)
                 await subscription.unsubscribe();
-            else return null;
+            else
+                return subscription;
         }
 
         subscription = await registration.pushManager.subscribe({
@@ -63,7 +79,7 @@ async function initWebPushClient() {
         })
             .then(res => res.json())
             .then(res => {
-                if('message' in res && typeof res.message === "string") {
+                if ('message' in res && typeof res.message === "string") {
                     res.message; // error message
                 } else if ('ok' in res && typeof res.ok === "boolean") {
                     res.ok; // created or not
