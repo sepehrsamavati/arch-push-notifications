@@ -1,7 +1,7 @@
 import ScopeNameDTO from "./ScopeNameDTO.js";
 import { Expose, Type } from "class-transformer";
 import { ContentEncoding } from "../../types/enums.js";
-import { IsDefined, IsEnum, IsNumber, IsOptional, IsString, Max, MaxLength, Min, MinLength } from "class-validator";
+import { IsDefined, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString, Max, MaxLength, Min, MinLength } from "class-validator";
 
 export default class RegisterDTO extends ScopeNameDTO {
     @Expose()
@@ -32,13 +32,14 @@ export default class RegisterDTO extends ScopeNameDTO {
     @Type(() => String)
     @IsDefined()
     @IsString()
-    @MinLength(1)
+    @IsNotEmpty()
     auth!: string;
 
     @Expose()
     @Type(() => String)
     @IsDefined()
     @IsString()
+    @IsNotEmpty()
     @MinLength(20)
     p256dh!: string;
 

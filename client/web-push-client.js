@@ -1,9 +1,11 @@
 document.addEventListener('DOMContentLoaded', initWebPushClient, false);
 async function initWebPushClient() {
     const serverUrl = "http://HOST:PORT";
+    const accessToken = "123";
+    const scope = "test";
     const serviceWorkerPath = "service-worker.js";
 
-    const publicKey = await (await fetch(serverUrl + "/WebPush/GetPublicKeyPath")).text();
+    const publicKey = await (await fetch(serverUrl + "/api/service/publicKey?scope=" + scope)).text();
 
     const registration = await navigator.serviceWorker.ready;
 
@@ -36,13 +38,14 @@ async function initWebPushClient() {
     const subscription = await renewSubscription();
 
     if (subscription)
-        fetch(serverUrl + "/WebPush/Register", {
+        fetch(serverUrl + "/api/service/register", {
             method: 'POST',
             headers: {
                 'Content-Type': "application/json"
             },
             body: JSON.stringify({
-                id: 123,
+                scope: scope,
+                accessToken: accessToken,
                 endpoint: subscription.endpoint,
                 encoding: "aes128gcm",
                 auth: subscription.getKey('auth'),

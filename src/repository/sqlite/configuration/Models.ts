@@ -10,7 +10,7 @@ export default class Models {
     constructor(
         sequelize: Sequelize
     ) {
-        this.subscription = sequelize.define<Model<ISubscriptionDbModel, CreateModel<ISubscriptionDbModel>>>('Subscription', {
+        this.subscription = sequelize.define<Model<ISubscriptionDbModel, CreateModel<ISubscriptionDbModel>>>('subscription', {
             id: {
                 type: DataTypes.INTEGER,
                 autoIncrement: true,
@@ -27,7 +27,7 @@ export default class Models {
                 type: DataTypes.INTEGER,
                 allowNull: false,
                 references: {
-                    model: 'Scope',
+                    model: 'scopes',
                     key: 'id',
                 },
             },
@@ -41,13 +41,12 @@ export default class Models {
                 allowNull: false,
             },
             endpoint: {
-                type: DataTypes.STRING(200),
+                type: DataTypes.STRING(1e3),
                 allowNull: false,
                 unique: true,
                 validate: {
-                    len: [5, 200],
+                    len: [5, 1e3],
                     isUrl: true,
-                    isLowercase: true,
                 },
             },
             auth: {
@@ -83,7 +82,7 @@ export default class Models {
             ]
         });
 
-        this.scope = sequelize.define<Model<IScopeDbModel>>('Scope', {
+        this.scope = sequelize.define<Model<IScopeDbModel>>('scope', {
             id: {
                 type: DataTypes.INTEGER,
                 autoIncrement: true,
@@ -125,6 +124,10 @@ export default class Models {
             tableName: 'scopes',
             timestamps: true,
             underscored: false,
+        });
+
+        this.scope.hasMany(this.subscription, {
+            foreignKey: 'scopeId' satisfies keyof ISubscriptionDbModel,
         });
 
         this.subscription.belongsTo(this.scope, {
