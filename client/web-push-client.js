@@ -1,4 +1,12 @@
 document.addEventListener('DOMContentLoaded', initWebPushClient, false);
+
+function arrayBufferToBase64(buffer) {
+    const bytes = new Uint8Array(buffer);
+    let binary = '';
+    bytes.forEach(b => binary += String.fromCharCode(b));
+    return btoa(binary);
+}
+
 async function initWebPushClient() {
     const serverUrl = "http://HOST:PORT";
     const accessToken = "123";
@@ -22,7 +30,7 @@ async function initWebPushClient() {
         let subscription = await registration.pushManager.getSubscription();
 
         if (subscription) {
-            if (subscription.getKey('p256dh') !== publicKey)
+            if (arrayBufferToBase64(subscription.getKey('p256dh')) !== publicKey)
                 await subscription.unsubscribe();
             else return null;
         }
@@ -48,8 +56,8 @@ async function initWebPushClient() {
                 accessToken: accessToken,
                 endpoint: subscription.endpoint,
                 encoding: "aes128gcm",
-                auth: subscription.getKey('auth'),
-                p256dh: subscription.getKey('p256dh'),
+                auth: arrayBufferToBase64(subscription.getKey('auth')),
+                p256dh: arrayBufferToBase64(subscription.getKey('p256dh')),
                 expirationTime: subscription.expirationTime,
             })
         })
