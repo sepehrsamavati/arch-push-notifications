@@ -31,15 +31,15 @@ export const registerHandler: RequestHandler = async (_req, res, _next) => {
     if (!scopeUserId)
         return res.status(401).json({ message: "Authentication failed" });
 
-    res.send(
-        await subscriptionRepository.create({
-            isDeleted: false,
-            scopeId: scope.id,
-            scopeUserId: scopeUserId,
-            endpoint: registerDTO.endpoint,
-            encoding: registerDTO.encoding,
-            auth: registerDTO.auth,
-            p256dh: registerDTO.p256dh
-        })
-    );
+    const ok = await subscriptionRepository.create({
+        isDeleted: false,
+        scopeId: scope.id,
+        scopeUserId: scopeUserId,
+        endpoint: registerDTO.endpoint,
+        encoding: registerDTO.encoding,
+        auth: registerDTO.auth,
+        p256dh: registerDTO.p256dh
+    });
+
+    res.status(ok ? 201 : 200).json({ ok });
 };

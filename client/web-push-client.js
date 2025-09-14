@@ -61,7 +61,13 @@ async function initWebPushClient() {
                 expirationTime: subscription.expirationTime,
             })
         })
-            .then(res => res.text())
-            .then(console.log);
+            .then(res => res.json())
+            .then(res => {
+                if('message' in res && typeof res.message === "string") {
+                    res.message; // error message
+                } else if ('ok' in res && typeof res.ok === "boolean") {
+                    res.ok; // created or not
+                }
+            });
 
 }
