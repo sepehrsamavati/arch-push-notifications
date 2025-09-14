@@ -37,6 +37,9 @@ class SubscriptionRepository {
             if (subscription.scopeId)
                 _where.scopeId = subscription.scopeId;
 
+            if (subscription.scopeUserId)
+                _where.scopeUserId = subscription.scopeUserId;
+
             const res = await this.database.models.subscription.findAll({
                 where: _where,
                 include: {
