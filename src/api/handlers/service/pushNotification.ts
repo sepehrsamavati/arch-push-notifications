@@ -1,29 +1,84 @@
 import webpush from "web-push";
+import { randomUUID } from "node:crypto";
 import { RequestHandler } from "express";
+import { PushStatus } from "../../../types/enums.js";
+import type { IPush } from "../../../types/entities/push.js";
 import PushNotificationDTO from "../../dto/PushNotificationDTO.js";
+import { instance as pushRepository } from "../../../repository/sqlite/PushRepository.js";
 import { instance as scopeRepository } from "../../../repository/sqlite/ScopeRepository.js";
 import { instance as subscriptionRepository } from "../../../repository/sqlite/SubscriptionRepository.js";
 
-export const pushNotificationHandler: RequestHandler = async (_req, res, _next) => {
-    const pushNotificationDTO: PushNotificationDTO = res.locals.dto;
+class SubscriptionPushResult {
+    ok = false;
+    message?: string;
+    sendResult?: webpush.SendResult;
 
-    const scope = await scopeRepository.get({ accessToken: pushNotificationDTO.key });
+    succeeded(sendResult: webpush.SendResult) {
+        this.ok = true;
+        if (sendResult)
+            this.sendResult = sendResult;
+        return this;
+    }
+
+    failed(message?: string, sendResult?: webpush.SendResult) {
+        this.ok = false;
+        if (message)
+            this.message = message;
+        if (sendResult)
+            this.sendResult = {
+                statusCode: sendResult.statusCode,
+                body: sendResult.body,
+                headers: sendResult.headers,
+            };
+        return this;
+    }
+}
+
+export const pushNotificationHandler: RequestHandler = async (_req, res, _next) => {
+    const pushNotificationDto: PushNotificationDTO = res.locals.dto;
+
+    const scope = await scopeRepository.get({ accessToken: pushNotificationDto.key });
 
     if (!scope)
         return res.status(401).json({ message: "Invalid key" });
 
     const subscriptions = await subscriptionRepository.getMany({
         scopeId: scope.id,
-        scopeUserId: pushNotificationDTO.userId,
+        scopeUserId: pushNotificationDto.userId,
     });
 
     if (!subscriptions) return res.status(404).json({ message: "No subscriptions found" });
 
-    const results: unknown[] = [];
+    const results: SubscriptionPushResult[] = [];
 
-    await Promise.all(
+    const _pushBaseInfo = {
+        content: JSON.stringify(pushNotificationDto),
+        date: new Date(),
+        isDeleted: false,
+        status: PushStatus.Pending,
+    } satisfies Partial<IPush>;
+
+    const pushes = await Promise.all(
         subscriptions
-            .map(subscription => new Promise(resolve => {
+            .map(async subscription => {
+                return {
+                    subscription: subscription,
+                    pushId: await pushRepository.create({
+                        ..._pushBaseInfo,
+                        subscriptionId: subscription.id,
+                    }),
+                };
+            })
+    );
+
+    const webPushRequests: Promise<void>[] = [];
+
+    for (const push of pushes) {
+        if (push.pushId === null) continue;
+        const { pushId, subscription } = push;
+        webPushRequests.push(
+            new Promise(resolve => {
+                let result = new SubscriptionPushResult();
                 webpush.sendNotification({
                     endpoint: subscription.endpoint,
                     keys: {
@@ -31,9 +86,9 @@ export const pushNotificationHandler: RequestHandler = async (_req, res, _next) 
                         p256dh: subscription.p256dh
                     },
                 }, JSON.stringify({
-                    title: pushNotificationDTO.title,
-                    body: pushNotificationDTO.bodyText,
-                    url: pushNotificationDTO.url
+                    title: pushNotificationDto.title,
+                    body: pushNotificationDto.bodyText,
+                    url: pushNotificationDto.url
                 }), {
                     vapidDetails: {
                         subject: scope.subject,
@@ -41,18 +96,29 @@ export const pushNotificationHandler: RequestHandler = async (_req, res, _next) 
                         privateKey: scope.privateKey,
                     }
                 })
-                    .then(result => results.push(result))
-                    .catch(error => {
-                        console.log("Web Push Error, ", error);
-                        let errorResult = typeof error === "object" && error && 'body' in error ? error.body : { message: "Error" };
-                        try {
-                            errorResult = JSON.parse(error.body);
-                        } catch { }
-                        results.push(errorResult);
+                    .then(webPushResult => {
+                        result.succeeded(webPushResult);
                     })
-                    .finally(() => resolve(null));
-            }))
-    );
+                    .catch(error => {
+                        const errorId = randomUUID();
+                        console.log(`Web Push Error; ID: ${errorId}, `, subscription, error);
+                        result.failed(`Error ID: ${errorId}`, error instanceof webpush.WebPushError ? error : undefined);
+                    })
+                    .finally(() => {
+
+                        results.push(result);
+
+                        pushRepository.update(pushId, {
+                            status: result.ok ? PushStatus.OK : PushStatus.Failed,
+                        });
+
+                        resolve();
+                    });
+            })
+        );
+    }
+
+    await Promise.all(webPushRequests);
 
     res.json(results);
 };

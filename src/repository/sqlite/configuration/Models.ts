@@ -1,16 +1,17 @@
-import { ContentEncoding } from "../../../types/enums.js";
 import { DataTypes, type Model, type Sequelize } from "sequelize";
+import { ContentEncoding, PushStatus } from "../../../types/enums.js";
 import type { ISubscription } from "../../../types/entities/subscription.js";
-import type { CreateModel, IScopeDbModel, ISubscriptionDbModel } from "./entities.js";
+import type { CreateModel, IPushDbModel, IScopeDbModel, ISubscriptionDbModel } from "./entities.js";
 
 export default class Models {
     public readonly subscription;
     public readonly scope;
+    public readonly push;
 
     constructor(
         sequelize: Sequelize
     ) {
-        this.subscription = sequelize.define<Model<ISubscriptionDbModel, CreateModel<ISubscriptionDbModel>>>('subscription', {
+        this.subscription = sequelize.define<Model<ISubscriptionDbModel, CreateModel<ISubscriptionDbModel>>>('Subscription', {
             id: {
                 type: DataTypes.INTEGER,
                 autoIncrement: true,
@@ -82,7 +83,7 @@ export default class Models {
             ]
         });
 
-        this.scope = sequelize.define<Model<IScopeDbModel>>('scope', {
+        this.scope = sequelize.define<Model<IScopeDbModel>>('Scope', {
             id: {
                 type: DataTypes.INTEGER,
                 autoIncrement: true,
@@ -122,6 +123,50 @@ export default class Models {
             },
         }, {
             tableName: 'scopes',
+            timestamps: true,
+            underscored: false,
+        });
+
+        this.push = sequelize.define<Model<IPushDbModel, CreateModel<IPushDbModel>>>('Push', {
+            id: {
+                type: DataTypes.INTEGER,
+                autoIncrement: true,
+                primaryKey: true,
+            },
+
+            isDeleted: {
+                type: DataTypes.BOOLEAN,
+                allowNull: false,
+                defaultValue: false,
+            },
+            date: {
+                type: DataTypes.DATE,
+                allowNull: false,
+            },
+            content: {
+                type: DataTypes.STRING(5e3),
+                allowNull: false,
+            },
+            status: {
+                type: DataTypes.INTEGER,
+                allowNull: false,
+                defaultValue: PushStatus.Pending,
+                validate: {
+                    isIn: [
+                        [PushStatus.Pending, PushStatus.OK, PushStatus.Failed, PushStatus.Canceled],
+                    ]
+                }
+            },
+            subscriptionId: {
+                type: DataTypes.INTEGER,
+                allowNull: false,
+                references: {
+                    model: 'subscriptions',
+                    key: 'id',
+                },
+            },
+        }, {
+            tableName: 'pushes',
             timestamps: true,
             underscored: false,
         });
