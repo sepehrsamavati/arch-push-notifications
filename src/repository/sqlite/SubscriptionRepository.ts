@@ -40,6 +40,12 @@ class SubscriptionRepository {
             if (subscription.scopeUserId)
                 _where.scopeUserId = subscription.scopeUserId;
 
+            if (subscription.encoding)
+                _where.encoding = subscription.encoding;
+
+            if (subscription.endpoint)
+                _where.endpoint = subscription.endpoint;
+
             const res = await this.database.models.subscription.findAll({
                 where: _where,
                 include: {
