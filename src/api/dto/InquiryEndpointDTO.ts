@@ -1,4 +1,4 @@
-import ScopeNameDTO from "./ScopeNameDTO";
+import ScopeNameDTO from "./ScopeNameDTO.js";
 import { Expose, Type } from "class-transformer";
 import { IsDefined, IsString, MaxLength, MinLength } from "class-validator";
 
