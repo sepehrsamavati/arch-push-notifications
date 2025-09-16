@@ -88,7 +88,13 @@ export const pushNotificationHandler: RequestHandler = async (_req, res, _next) 
                 }, JSON.stringify({
                     title: pushNotificationDto.title,
                     body: pushNotificationDto.bodyText,
-                    url: pushNotificationDto.url
+                    dir: pushNotificationDto.dir,
+                    image: pushNotificationDto.imageUrl,
+                    silent: pushNotificationDto.silent,
+                    requireInteraction: pushNotificationDto.requireInteraction,
+                    data: {
+                        url: pushNotificationDto.url,
+                    }
                 }), {
                     vapidDetails: {
                         subject: scope.subject,
@@ -104,8 +110,8 @@ export const pushNotificationHandler: RequestHandler = async (_req, res, _next) 
                         console.log(`Web Push Error; ID: ${errorId}, `, subscription, error);
                         result.failed(`Error ID: ${errorId}`, error instanceof webpush.WebPushError ? error : undefined);
 
-                        if(error instanceof webpush.WebPushError) {
-                            if(error.statusCode === 410)
+                        if (error instanceof webpush.WebPushError) {
+                            if (error.statusCode === 410)
                                 subscriptionRepository.update(subscription.id, { isDeleted: true });
                         }
                     })

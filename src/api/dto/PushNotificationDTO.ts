@@ -1,5 +1,5 @@
 import { Expose, Type } from "class-transformer";
-import { MaxLength, IsString, IsDefined, IsNotEmpty } from "class-validator";
+import { MaxLength, IsString, IsDefined, IsNotEmpty, IsOptional, IsBoolean, IsIn } from "class-validator";
 
 export default class PushNotificationDTO {
     @Expose()
@@ -27,18 +27,40 @@ export default class PushNotificationDTO {
     title!: string;
 
     @Expose()
-    @Type(() => String)
-    @IsDefined()
-    @IsNotEmpty()
-    @IsString()
-    @MaxLength(2000)
-    bodyText!: string;
+    @Type(() => Boolean)
+    @IsBoolean()
+    silent = false;
+
+    @Expose()
+    @Type(() => Boolean)
+    @IsBoolean()
+    requireInteraction = false;
 
     @Expose()
     @Type(() => String)
     @IsDefined()
-    @IsNotEmpty()
+    @IsString()
+    @IsIn(['auto', 'ltr', 'rtl'])
+    dir?: string;
+
+    @Expose()
+    @Type(() => String)
+    @IsOptional()
+    @IsString()
+    @MaxLength(200)
+    bodyText?: string;
+
+    @Expose()
+    @Type(() => String)
+    @IsOptional()
     @IsString()
     @MaxLength(500)
-    url!: string;
+    url?: string;
+
+    @Expose()
+    @Type(() => String)
+    @IsOptional()
+    @IsString()
+    @MaxLength(500)
+    imageUrl?: string;
 }
