@@ -14,6 +14,6 @@ const chequeRouter = Router();
 chequeRouter.post('/register', validator(RegisterDTO), registerHandler);
 chequeRouter.post('/push', validator(PushNotificationDTO), pushNotificationHandler);
 chequeRouter.get('/publicKey', validator(ScopeNameDTO), getPublicKeyHandler);
-chequeRouter.get('/subscriptionExistsHandler', validator(InquiryEndpointDTO), subscriptionExistsHandler);
+chequeRouter.get('/subscriptionExists', validator(InquiryEndpointDTO), subscriptionExistsHandler);
 
 export default chequeRouter;
