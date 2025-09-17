@@ -7,7 +7,7 @@ export default class PushNotificationDTO {
     @IsDefined()
     @IsNotEmpty()
     @IsString()
-    @MaxLength(100)
+    @MaxLength(500)
     key!: string;
 
     @Expose()
@@ -28,17 +28,19 @@ export default class PushNotificationDTO {
 
     @Expose()
     @Type(() => Boolean)
+    @IsOptional()
     @IsBoolean()
     silent = false;
 
     @Expose()
     @Type(() => Boolean)
+    @IsOptional()
     @IsBoolean()
     requireInteraction = false;
 
     @Expose()
     @Type(() => String)
-    @IsDefined()
+    @IsOptional()
     @IsString()
     @IsIn(['auto', 'ltr', 'rtl'])
     dir?: string;
