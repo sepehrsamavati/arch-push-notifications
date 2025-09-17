@@ -1,43 +1,82 @@
+/// <reference lib="webworker" /> // 
+// @ts-check
+/** @type {ServiceWorkerGlobalScope} */
+// @ts-ignore
+const sw = self;
+
 'use strict';
-/* eslint-env browser, serviceworker */
 
-self.addEventListener('install', () => {
-	self.skipWaiting();
+sw.addEventListener('install', () => {
+    sw.skipWaiting();
 });
 
-self.addEventListener('push', function(event) {
-	let notificationTitle = 'NO_TITLE';
-	const notificationOptions = {
-		body: 'NO_BODY_TEXT',
-		icon: './images/app-logo.png',
-		badge: './images/app-logo.png',
-		data: {
-			url: 'https://web.dev/push-notifications-overview/',
-		},
-	};
+sw.addEventListener('push', function (event) {
+    let notificationTitle = 'NO_TITLE';
+    /** @type {Partial<NotificationOptions>} */
+    let notificationOptions = {
+        icon: '../favicon.ico',
+        badge: '../pwa-192x192-white.png',
+        data: {
+            url: "https://sepehrsamavati.ir/"
+        },
+    };
 
-	if (event.data) {
-		const data = event.data.json();
-		notificationTitle = data.title;
-		notificationOptions.body = data.body;
-		notificationOptions.data.url = data.url;
-	}
+    if (event.data) {
+        const data = event.data.json();
+        notificationTitle = data.title;
 
-	event.waitUntil(
-		self.registration.showNotification(
-			notificationTitle,
-			notificationOptions,
-		),
-	);
+        notificationOptions = {
+            ...notificationOptions,
+            ...data,
+        };
+
+        if (data.url)
+            notificationOptions.data.url = data.url;
+    }
+
+    event.waitUntil(
+        sw.registration.showNotification(
+            notificationTitle,
+            notificationOptions,
+        ),
+    );
 });
 
-self.addEventListener('notificationclick', function(event) {
-	event.notification.close();
+sw.addEventListener('notificationclick', function (event) {
+    if (!event.notification?.data?.url) return;
 
-	let clickResponsePromise = Promise.resolve();
-	if (event.notification?.data?.url) {
-		clickResponsePromise = clients.openWindow(event.notification.data.url);
-	}
+    event.preventDefault();
 
-	event.waitUntil(clickResponsePromise);
+    event.notification.close();
+
+    const targetUrl = event.notification.data.url;
+
+    event.waitUntil(sw.clients.matchAll({
+        type: "window",
+        includeUncontrolled: true
+    }).then(function (clientList) {
+        if (targetUrl) {
+            let client = null;
+
+            for (let i = 0; i < clientList.length; i++) {
+                let item = clientList[i];
+
+                if (item.url) {
+                    client = item;
+                    break;
+                }
+            }
+
+            if (client && 'navigate' in client) {
+                client.focus();
+                event.notification.close();
+                return client.navigate(targetUrl);
+            }
+            else {
+                event.notification.close();
+                // if client doesn't have navigate function, try to open a new browser window
+                return sw.clients.openWindow(targetUrl);
+            }
+        }
+    }));
 });
