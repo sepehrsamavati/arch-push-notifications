@@ -27,9 +27,6 @@ class ScopeRepository {
             const res = (await this.database.models.scope.findOne({
                 plain: true,
                 where: _where,
-                include: {
-                    all: true,
-                }
             }))?.toJSON();
 
             return res ?? null;
