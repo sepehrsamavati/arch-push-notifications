@@ -3,6 +3,7 @@
 /** @type {ServiceWorkerGlobalScope} */
 // @ts-ignore
 const sw = self;
+const defaultUrl = "https://sepehrsamavati.ir/";
 
 'use strict';
 
@@ -17,7 +18,7 @@ sw.addEventListener('push', function (event) {
         icon: '../favicon.ico',
         badge: '../pwa-192x192-white.png',
         data: {
-            url: "https://sepehrsamavati.ir/"
+            url: defaultUrl
         },
     };
 
@@ -32,6 +33,9 @@ sw.addEventListener('push', function (event) {
 
         if (data.url)
             notificationOptions.data.url = data.url;
+
+        if (!notificationOptions.data.url)
+            notificationOptions.data.url = defaultUrl;
     }
 
     event.waitUntil(
