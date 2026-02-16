@@ -1,0 +1,22 @@
+{
+    "name": "arch-web-push-client",
+    "version": "0.1.0-pre.1",
+    "description": "A helper for web push notifications",
+    "main": "dist/index.js",
+    "module": "dist/index.mjs",
+    "scripts": {
+        "test": "echo \"No tests specified\""
+    },
+    "keywords": [
+        "web push",
+        "notifications"
+    ],
+    "author": "Your Name",
+    "license": "MIT",
+    "publishConfig": {
+        "access": "public"
+    },
+    "devDependencies": {
+        "typescript": "^5.9.3"
+    }
+}

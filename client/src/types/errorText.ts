@@ -1,0 +1,1 @@
+export type IRegisterErrorText = "errorOccurred" | "couldNotGetAccessToken" | "webPushIsSupported" | "couldNotGetSubscription" | "notificationAccessNotGranted" | "errorOccurredWhileTransferringData" | "unknownError";
