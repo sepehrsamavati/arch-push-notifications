@@ -1,29 +1,76 @@
 {
-  "name": "arch-push-notifications",
-  "version": "1.0.0",
-  "description": "",
-  "type": "module",
-  "scripts": {
-    "start": "node ./dist/index.js",
-    "build": "tsc"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "MIT",
-  "dependencies": {
-    "class-transformer": "^0.5.1",
-    "class-validator": "^0.15.1",
-    "dotenv": "^17.4.2",
-    "express": "^5.2.1",
-    "reflect-metadata": "^0.2.2",
-    "sequelize": "^6.37.8",
-    "sqlite3": "^6.0.1",
-    "web-push": "^3.6.7"
-  },
-  "devDependencies": {
-    "@types/express": "^5.0.6",
-    "@types/node": "^25.6.0",
-    "@types/web-push": "^3.6.4",
-    "typescript": "^5.9.2"
-  }
+    "name": "arch-push-notifications",
+    "version": "1.0.0",
+    "description": "Arch Push Notifications (APN) server for web push",
+    "type": "module",
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "bin": {
+        "arch-push-notifications": "./dist/cli.js"
+    },
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "import": "./dist/index.js"
+        },
+        "./app": {
+            "types": "./dist/api/app.d.ts",
+            "import": "./dist/api/app.js"
+        },
+        "./config": {
+            "types": "./dist/config.d.ts",
+            "import": "./dist/config.js"
+        }
+    },
+    "files": [
+        "dist",
+        ".env.example",
+        "README.md"
+    ],
+    "scripts": {
+        "build": "tsc",
+        "typecheck": "tsc --noEmit",
+        "start": "node ./dist/cli.js",
+        "prepublishOnly": "npm run build"
+    },
+    "keywords": [
+        "web-push",
+        "push-notifications",
+        "vapid",
+        "express",
+        "notifications"
+    ],
+    "author": "Sepehr Samavati",
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/sepehrsamavati/arch-push-notifications.git",
+        "directory": "server"
+    },
+    "bugs": {
+        "url": "https://github.com/sepehrsamavati/arch-push-notifications/issues"
+    },
+    "homepage": "https://github.com/sepehrsamavati/arch-push-notifications#readme",
+    "publishConfig": {
+        "access": "public"
+    },
+    "engines": {
+        "node": ">=18"
+    },
+    "dependencies": {
+        "class-transformer": "^0.5.1",
+        "class-validator": "^0.15.1",
+        "dotenv": "^17.4.2",
+        "express": "^5.2.1",
+        "reflect-metadata": "^0.2.2",
+        "sequelize": "^6.37.8",
+        "sqlite3": "^6.0.1",
+        "web-push": "^3.6.7"
+    },
+    "devDependencies": {
+        "@types/express": "^5.0.6",
+        "@types/node": "^25.6.0",
+        "@types/web-push": "^3.6.4",
+        "typescript": "^5.9.2"
+    }
 }

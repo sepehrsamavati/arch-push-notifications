@@ -16,7 +16,10 @@ export default class WebPushClientSetup {
 
     constructor(args: IWebPushClientSetupArguments) {
         this.#args = Object.freeze({
-            ...JSON.parse(JSON.stringify(args)) as IWebPushClientSetupArguments,
+            serverUrl: args.serverUrl,
+            scope: args.scope,
+            serviceWorkerPath: args.serviceWorkerPath,
+            getAccessToken: args.getAccessToken,
             onStateChange: args.onStateChange ?? (() => null),
             serviceWorkerVersion: args.serviceWorkerVersion || "0.0.0-unspecified",
             serviceWorkerVersionLocalStorageKey: args.serviceWorkerVersionLocalStorageKey || "installed_service_worker_version",
@@ -82,15 +85,12 @@ export default class WebPushClientSetup {
 
             const data = await res.json() as { ok?: boolean; message?: string };
 
-            if (typeof data?.message === "string") {
-                data.message; // error message
+            if (!res.ok) {
+                console.error("Register web push failed", data.message ?? res.status);
+                return false;
             }
 
-            if (typeof res?.ok === "boolean") {
-                return data.ok; // created or not
-            }
-
-            return false;
+            return Boolean(data.ok);
         } catch (err) {
             console.error(err);
             return false;

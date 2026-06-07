@@ -1,6 +1,7 @@
 import Setup from "./Setup";
 import type { IRegisterErrorText } from "./types/errorText";
 import type { IWebPushClientSetupArguments } from "./types/clientSetupArguments";
+import { urlBase64ToUint8Array } from "./utils/vapid";
 
 export default class WebPushClient {
     #setup;
@@ -87,7 +88,7 @@ export default class WebPushClient {
     subscriptionRegistered: boolean | null = null;
 
     get inactive() {
-        return !this.webPushIsSupported || this.#publicKey
+        return !this.webPushIsSupported || !this.#publicKey;
     }
 
     get webPushIsSupported() {
@@ -105,7 +106,7 @@ export default class WebPushClient {
 
         subscription = await this.#serviceWorker?.pushManager.subscribe({
             userVisibleOnly: true,
-            applicationServerKey: this.#publicKey
+            applicationServerKey: urlBase64ToUint8Array(this.#publicKey) as BufferSource,
         });
 
         window.localStorage.setItem(this.#setup.args.subscriptionEndpointLocalStorageKey, subscription.endpoint);

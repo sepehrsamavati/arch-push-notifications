@@ -1,5 +1,14 @@
 # arch-push-notifications
 
+## npm packages
+
+| Package | Directory | Install |
+|---|---|---|
+| `arch-push-notifications` | `server/` | `npm install arch-push-notifications` |
+| `arch-web-push-client` | `client/` | `npm install arch-web-push-client` |
+
+See `server/README.md` and `client/README.md` for usage.
+
 ## Definitions
 - `Client`: Browser client that supports service workers and push notifications.
 - `Scope application`: Backend server of the client.

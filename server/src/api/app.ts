@@ -5,13 +5,16 @@ import setRouters from "./routers/setRouters.js";
 import { httpLogger } from './middlewares/logger.js';
 import { errorRequestHandler, notFoundHandler } from "./errorHandlers.js";
 import config from '../config.js';
+import { connection } from '../repository/sqlite/connection.js';
 
 export class ExpressApplication {
     #app: express.Application = express();
     #server?: Server;
 
-    initServer() {
+    async initServer() {
         if (this.#server) return this.#server;
+
+        await connection.models.ready;
 
         this.#app.disable("x-powered-by");
         this.#app.use(httpLogger);
@@ -43,7 +46,10 @@ export class ExpressApplication {
     shutdown() {
         return new Promise<void>(resolve => {
             const server = this.#server;
-            if (!server) return;
+            if (!server) {
+                resolve();
+                return;
+            }
 
             server.once("close", () => {
                 console.info("✅ REST API server closed.");

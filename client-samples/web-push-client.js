@@ -12,7 +12,7 @@ async function subscriptionExists(scope, endpoint) {
         const query = new URLSearchParams();
         query.append("scope", scope);
         query.append("url", endpoint);
-        const res = await fetch(serverUrl + "/api/service/subscriptionExistsHandler?" + query);
+        const res = await fetch(serverUrl + "/api/service/subscriptionExists?" + query);
         if (res.status === 200) {
             const data = await res.json();
             return Boolean(data.ok);

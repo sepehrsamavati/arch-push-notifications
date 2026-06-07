@@ -94,7 +94,7 @@ class SubscriptionRepository {
                 where: {
                     isDeleted: false,
                     expirationTime: {
-                        [Op.gte]: Date.now(),
+                        [Op.lt]: Date.now(),
                     }
                 }
             });
