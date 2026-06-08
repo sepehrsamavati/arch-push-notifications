@@ -1,5 +1,5 @@
 {
-    "name": "arch-web-push-client",
+    "name": "@semizero/web-push-client",
     "version": "0.1.0",
     "description": "Browser client helper for Arch Push Notifications (APN)",
     "type": "module",

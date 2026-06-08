@@ -1,11 +1,11 @@
-# arch-web-push-client
+# @semizero/web-push-client
 
 Browser helper for registering and managing web push subscriptions against an [Arch Push Notifications](https://github.com/sepehrsamavati/arch-push-notifications) server.
 
 ## Install
 
 ```bash
-npm install arch-web-push-client
+npm install @semizero/web-push-client
 ```
 
 ## Requirements
@@ -17,7 +17,7 @@ npm install arch-web-push-client
 ## Quick start
 
 ```ts
-import { WebPushClient } from "arch-web-push-client";
+import { WebPushClient } from "@semizero/web-push-client";
 
 const client = new WebPushClient({
     serverUrl: "https://push.example.com",
