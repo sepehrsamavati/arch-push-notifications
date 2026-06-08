@@ -30,7 +30,13 @@ const client = new WebPushClient({
     },
 });
 
+// Option A: let the client register the service worker
 await client.setupServiceWorkerAsync();
+
+// Option B: inject your own registration
+// await client.setServiceWorkerRegistration(await navigator.serviceWorker.register("/service-worker.js"));
+// or pass serviceWorkerRegistration in the constructor
+
 client.initialize();
 
 const error = await client.grantAccessAndRegister();
@@ -47,9 +53,15 @@ You must provide your own service worker. See the sample in the repo at `client-
 
 | Method / property | Description |
 |---|---|
+| `serviceWorkerRegistration` | Current `ServiceWorkerRegistration`, if set |
+| `setServiceWorkerRegistration(registration)` | Inject a registration registered elsewhere |
+| `useServiceWorkerRegistration(registration)` | Inject a registration or async resolver |
 | `setupServiceWorkerAsync()` | Registers the service worker |
 | `setupServiceWorkerSync(cb?)` | Fire-and-forget variant |
 | `initialize()` | Fetches VAPID key and checks existing subscription |
+| `getWebPushSubscription(renew?)` | Gets the browser push subscription (`renew` defaults to `true`) |
+| `registerSubscription(subscription, accessToken?)` | POST subscription to the server for the current user |
+| `registerForUser(options?)` | Gets subscription and POSTs it for the user (permission must already be granted) |
 | `grantAccessAndRegister()` | Requests permission, subscribes, registers with server |
 | `unsubscribe()` | Removes local and server subscription |
 | `subscriptionRegistered` | `true` / `false` / `null` (loading) |

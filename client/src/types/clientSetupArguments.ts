@@ -7,4 +7,6 @@ export type IWebPushClientSetupArguments = {
     serviceWorkerVersion?: string;
     subscriptionEndpointLocalStorageKey?: string;
     serviceWorkerVersionLocalStorageKey?: string;
+    /** Pre-registered service worker; use when the host app registers the SW itself */
+    serviceWorkerRegistration?: ServiceWorkerRegistration | (() => ServiceWorkerRegistration | Promise<ServiceWorkerRegistration | undefined>);
 }

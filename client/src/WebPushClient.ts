@@ -8,6 +8,42 @@ export default class WebPushClient {
 
     constructor(setupArgs: IWebPushClientSetupArguments) {
         this.#setup = new Setup(setupArgs);
+        this.#applyInjectedServiceWorkerRegistration(setupArgs.serviceWorkerRegistration);
+    }
+
+    get serviceWorkerRegistration() {
+        return this.#serviceWorker;
+    }
+
+    setServiceWorkerRegistration(registration: ServiceWorkerRegistration, doNotCheckForUpdates = false) {
+        this.#serviceWorker = this.#setup.applyServiceWorkerRegistration(registration, doNotCheckForUpdates);
+        this.#setup.args.onStateChange();
+        return this;
+    }
+
+    async useServiceWorkerRegistration(
+        registration: ServiceWorkerRegistration | (() => ServiceWorkerRegistration | Promise<ServiceWorkerRegistration | undefined>),
+        doNotCheckForUpdates = false,
+    ) {
+        const resolved = typeof registration === "function" ? await registration() : registration;
+
+        if (resolved)
+            this.setServiceWorkerRegistration(resolved, doNotCheckForUpdates);
+
+        return resolved;
+    }
+
+    #applyInjectedServiceWorkerRegistration(
+        registration?: IWebPushClientSetupArguments["serviceWorkerRegistration"],
+    ) {
+        if (!registration) return;
+
+        if (typeof registration === "function") {
+            this.useServiceWorkerRegistration(registration, true);
+            return;
+        }
+
+        this.setServiceWorkerRegistration(registration, true);
     }
 
     async setupServiceWorkerAsync() {
@@ -95,7 +131,16 @@ export default class WebPushClient {
         return 'Notification' in window && 'serviceWorker' in navigator && 'PushManager' in window;
     }
 
-    async #getNewWebPushSubscription() {
+    async getWebPushSubscription(renew = true) {
+        if (!(this.#publicKey && this.#serviceWorker)) return;
+
+        if (!renew)
+            return (await this.#serviceWorker.pushManager.getSubscription()) ?? undefined;
+
+        return this.#createWebPushSubscription();
+    }
+
+    async #createWebPushSubscription() {
         if (!(this.#publicKey && this.#serviceWorker)) return;
 
         let subscription = await this.#serviceWorker.pushManager.getSubscription();
@@ -104,7 +149,7 @@ export default class WebPushClient {
 
         this.subscriptionRegistered = false;
 
-        subscription = await this.#serviceWorker?.pushManager.subscribe({
+        subscription = await this.#serviceWorker.pushManager.subscribe({
             userVisibleOnly: true,
             applicationServerKey: urlBase64ToUint8Array(this.#publicKey) as BufferSource,
         });
@@ -112,6 +157,48 @@ export default class WebPushClient {
         window.localStorage.setItem(this.#setup.args.subscriptionEndpointLocalStorageKey, subscription.endpoint);
 
         return subscription;
+    }
+
+    async registerSubscription(subscription: PushSubscription, accessToken?: string) {
+        const token = accessToken ?? await this.#setup.args.getAccessToken();
+        if (!token) return false;
+
+        const registered = await this.#setup.registerWebPush(token, subscription);
+
+        if (registered) {
+            this.subscriptionRegistered = true;
+            this.#setup.args.onStateChange();
+        }
+
+        return registered;
+    }
+
+    async registerForUser(options?: { accessToken?: string; renewSubscription?: boolean }): Promise<IRegisterErrorText | null> {
+        if (!this.webPushIsSupported)
+            return "webPushIsSupported";
+
+        if (Notification.permission !== "granted")
+            return "notificationAccessNotGranted";
+
+        try {
+            const token = options?.accessToken ?? await this.#setup.args.getAccessToken();
+            if (!token) return "couldNotGetAccessToken";
+
+            const subscription = await this.getWebPushSubscription(options?.renewSubscription ?? true);
+            if (!subscription) return "couldNotGetSubscription";
+
+            const registered = await this.registerSubscription(subscription, token);
+
+            return registered ? null : "errorOccurred";
+        } catch (err) {
+            console.error(err);
+
+            if (err instanceof Error && err.message.toLowerCase().includes('error retrieving push subscription')) {
+                return "errorOccurredWhileTransferringData";
+            }
+
+            return "unknownError";
+        }
     }
 
     async unsubscribe(subscription?: PushSubscription | null) {
@@ -141,26 +228,10 @@ export default class WebPushClient {
 
         try {
             const permission = await Notification.requestPermission();
-            if (permission === "granted") {
-                const token = await this.#setup.args.getAccessToken();
-                if (!token) return "couldNotGetAccessToken";
-
-                const subscription = await this.#getNewWebPushSubscription();
-                if (!subscription) return "couldNotGetSubscription";
-
-                const registered = await this.#setup.registerWebPush(token, subscription);
-
-                if (registered) {
-                    this.subscriptionRegistered = true;
-                    this.#setup.args.onStateChange();
-                    return null;
-                } else {
-                    return "errorOccurred";
-                }
-            }
-            else {
+            if (permission !== "granted")
                 return "notificationAccessNotGranted";
-            }
+
+            return this.registerForUser();
         } catch (err) {
             console.error(err);
 

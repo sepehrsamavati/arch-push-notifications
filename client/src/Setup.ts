@@ -1,7 +1,9 @@
 import type { IWebPushClientSetupArguments } from "./types/clientSetupArguments";
 
+type ISetupArguments = Required<Omit<IWebPushClientSetupArguments, "serviceWorkerRegistration">>;
+
 export default class WebPushClientSetup {
-    #args: Required<IWebPushClientSetupArguments>;
+    #args: ISetupArguments;
 
     get args() {
         return this.#args;
@@ -24,7 +26,7 @@ export default class WebPushClientSetup {
             serviceWorkerVersion: args.serviceWorkerVersion || "0.0.0-unspecified",
             serviceWorkerVersionLocalStorageKey: args.serviceWorkerVersionLocalStorageKey || "installed_service_worker_version",
             subscriptionEndpointLocalStorageKey: args.subscriptionEndpointLocalStorageKey || "push_subscription_endpoint",
-        } satisfies Required<IWebPushClientSetupArguments>);
+        } satisfies ISetupArguments);
     }
 
     /** Get public key of scope from push server */
@@ -53,7 +55,11 @@ export default class WebPushClientSetup {
             return;
         }
 
-        if (registration && !doNotCheckForUpdates)
+        return this.applyServiceWorkerRegistration(registration, doNotCheckForUpdates);
+    }
+
+    applyServiceWorkerRegistration(registration: ServiceWorkerRegistration, doNotCheckForUpdates = false) {
+        if (!doNotCheckForUpdates)
             this.#checkSwUpdate(registration);
 
         return registration;
