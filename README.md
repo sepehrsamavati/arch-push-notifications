@@ -4,7 +4,6 @@
 
 | Package | Directory | Install |
 |---|---|---|
-| `arch-push-notifications` | `server/` | `npm install arch-push-notifications` |
 | `@semizero/web-push-client` | `client/` | `npm install @semizero/web-push-client` |
 
 See `server/README.md` and `client/README.md` for usage.
