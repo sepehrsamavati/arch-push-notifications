@@ -10,12 +10,12 @@ import { pushNotificationHandler } from "../handlers/service/pushNotification.js
 import { subscriptionExistsHandler } from "../handlers/service/subscriptionExists.js";
 import { deleteSubscriptionHandler } from "../handlers/service/deleteSubscription.js";
 
-const chequeRouter = Router();
+const serviceRouter = Router();
 
-chequeRouter.post('/register', validator(RegisterDTO), registerHandler);
-chequeRouter.post('/push', validator(PushNotificationDTO), pushNotificationHandler);
-chequeRouter.get('/publicKey', validator(ScopeNameDTO), getPublicKeyHandler);
-chequeRouter.get('/subscriptionExists', validator(InquiryEndpointDTO), subscriptionExistsHandler);
-chequeRouter.delete('/subscription', validator(InquiryEndpointDTO), deleteSubscriptionHandler);
+serviceRouter.post('/register', validator(RegisterDTO), registerHandler);
+serviceRouter.post('/push', validator(PushNotificationDTO), pushNotificationHandler);
+serviceRouter.get('/publicKey', validator(ScopeNameDTO), getPublicKeyHandler);
+serviceRouter.get('/subscriptionExists', validator(InquiryEndpointDTO), subscriptionExistsHandler);
+serviceRouter.delete('/subscription', validator(InquiryEndpointDTO), deleteSubscriptionHandler);
 
-export default chequeRouter;
+export default serviceRouter;

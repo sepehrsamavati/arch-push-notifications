@@ -167,7 +167,7 @@ class WebPushClient {
     subscriptionRegistered = true;
 
     get inactive() {
-        return !this.webPushIsSupported || this.#publicKey
+        return !this.webPushIsSupported || !this.#publicKey;
     }
 
     get webPushIsSupported() {

@@ -16,16 +16,16 @@ export const registerHandler: RequestHandler = async (_req, res, _next) => {
     let scopeUserId: string | null = null;
 
     try {
-        const res = await fetch(scope.getUserIdEndpoint, {
+        const userIdResponse = await fetch(scope.getUserIdEndpoint, {
             method: "GET",
             headers: {
                 'ClientAccessToken': registerDTO.accessToken,
             }
         });
-        if (res.status === 200)
-            scopeUserId = await res.text();
+        if (userIdResponse.status === 200)
+            scopeUserId = await userIdResponse.text();
     } catch (err) {
-
+        console.error("Scope user ID lookup failed", err);
     }
 
     if (!scopeUserId)
@@ -38,7 +38,8 @@ export const registerHandler: RequestHandler = async (_req, res, _next) => {
         endpoint: registerDTO.endpoint,
         encoding: registerDTO.encoding,
         auth: registerDTO.auth,
-        p256dh: registerDTO.p256dh
+        p256dh: registerDTO.p256dh,
+        expirationTime: registerDTO.expirationTime ?? null,
     });
 
     res.status(ok ? 201 : 200).json({ ok });

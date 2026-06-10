@@ -7,6 +7,7 @@ export default class Models {
     public readonly subscription;
     public readonly scope;
     public readonly push;
+    public readonly ready: Promise<void>;
 
     constructor(
         sequelize: Sequelize
@@ -180,6 +181,6 @@ export default class Models {
             as: 'scope' satisfies keyof ISubscription,
         });
 
-        sequelize.sync();
+        this.ready = sequelize.sync().then(() => undefined);
     }
 }

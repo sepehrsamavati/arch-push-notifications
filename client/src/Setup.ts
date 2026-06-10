@@ -1,7 +1,9 @@
 import type { IWebPushClientSetupArguments } from "./types/clientSetupArguments";
 
+type ISetupArguments = Required<Omit<IWebPushClientSetupArguments, "serviceWorkerRegistration">>;
+
 export default class WebPushClientSetup {
-    #args: Required<IWebPushClientSetupArguments>;
+    #args: ISetupArguments;
 
     get args() {
         return this.#args;
@@ -16,12 +18,15 @@ export default class WebPushClientSetup {
 
     constructor(args: IWebPushClientSetupArguments) {
         this.#args = Object.freeze({
-            ...JSON.parse(JSON.stringify(args)) as IWebPushClientSetupArguments,
+            serverUrl: args.serverUrl,
+            scope: args.scope,
+            serviceWorkerPath: args.serviceWorkerPath,
+            getAccessToken: args.getAccessToken,
             onStateChange: args.onStateChange ?? (() => null),
             serviceWorkerVersion: args.serviceWorkerVersion || "0.0.0-unspecified",
             serviceWorkerVersionLocalStorageKey: args.serviceWorkerVersionLocalStorageKey || "installed_service_worker_version",
             subscriptionEndpointLocalStorageKey: args.subscriptionEndpointLocalStorageKey || "push_subscription_endpoint",
-        } satisfies Required<IWebPushClientSetupArguments>);
+        } satisfies ISetupArguments);
     }
 
     /** Get public key of scope from push server */
@@ -50,7 +55,11 @@ export default class WebPushClientSetup {
             return;
         }
 
-        if (registration && !doNotCheckForUpdates)
+        return this.applyServiceWorkerRegistration(registration, doNotCheckForUpdates);
+    }
+
+    applyServiceWorkerRegistration(registration: ServiceWorkerRegistration, doNotCheckForUpdates = false) {
+        if (!doNotCheckForUpdates)
             this.#checkSwUpdate(registration);
 
         return registration;
@@ -82,15 +91,12 @@ export default class WebPushClientSetup {
 
             const data = await res.json() as { ok?: boolean; message?: string };
 
-            if (typeof data?.message === "string") {
-                data.message; // error message
+            if (!res.ok) {
+                console.error("Register web push failed", data.message ?? res.status);
+                return false;
             }
 
-            if (typeof res?.ok === "boolean") {
-                return data.ok; // created or not
-            }
-
-            return false;
+            return Boolean(data.ok);
         } catch (err) {
             console.error(err);
             return false;
